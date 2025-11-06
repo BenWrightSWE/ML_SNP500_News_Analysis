@@ -1,0 +1,15 @@
+You should use a venv, the following explains how to go about making one and setting up the environment.
+
+to make .venv use:
+python3 -m venv .venv
+
+to use .venv use:
+source .venv/bin/activate
+
+then import all the needed imports:
+    python3 -m pip install
+    * scikit-learn
+    * pandas
+
+to exit venv use:
+deactivate
