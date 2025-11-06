@@ -13,3 +13,34 @@ then import all the needed imports:
 
 to exit venv use:
 deactivate
+
+
+To work on the project we will have a seperate main, dev, and self branches
+
+main is what we will be presenting
+
+dev is what will be our cumulative work
+
+self branch will be your working branch, name it after your uga id (ie bgw88439 for me)
+
+initially you will use the following:
+
+git checkout origin/dev
+git branch bgw88439
+git checkout bgw88439
+git add .
+git status
+git commit -m "commit message"
+git push origin bgw88439
+
+from that point on you can get other peoples work by using:
+git fetch
+
+from that point you can push your work using:
+git push
+
+When you are done with your branches work, you can submit a PR (pull request),
+in which someone will review your work and merge it
+do this by going into github, going to pull requests,
+set base to dev and compare to your self branch
+then submit the PR in which someone will review it and then merge it with dev
