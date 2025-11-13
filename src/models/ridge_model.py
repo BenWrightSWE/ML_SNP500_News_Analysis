@@ -1,7 +1,6 @@
 from sklearn.preprocessing import StandardScaler
 from sklearn import linear_model
 from sklearn.metrics import r2_score
-
 from src.usable_data import article_train, article_test, djia_train, djia_test
 
 # scale data for Ridge model
