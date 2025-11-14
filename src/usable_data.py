@@ -3,6 +3,10 @@ from scipy.sparse import csr_matrix, vstack
 from sklearn.model_selection import train_test_split
 import re
 
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent  # project root
+DATA = ROOT / "data" / "processed" / "vector_news.csv"
 # converts a string sparse matrix to a sparse matrix
 
 def parse_sparse_matrix_string(s, shape=(1, 22142)):
@@ -20,7 +24,7 @@ def parse_sparse_matrix_string(s, shape=(1, 22142)):
 
 # import the data:
 
-vector_news = pd.read_csv("../../data/processed/vector_news.csv", header = 0)
+vector_news = pd.read_csv(DATA, header = 0)
 
 # converts string representations to sparse matrices
 
