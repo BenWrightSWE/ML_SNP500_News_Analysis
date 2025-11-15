@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import matplotlib
 import datetime
 import numpy as np
 
@@ -25,8 +26,11 @@ GOOG_df = snp_df[snp_df["name"] == "GOOG"]
 IBM_df = snp_df[snp_df["name"] == "IBM"]
 JPM_df = snp_df[snp_df["name"] == "JPM"]
 MSFT_df = snp_df[snp_df["name"] == "MSFT"]
-TSLA_df = snp_df[snp_df["name"] == "TSLA"]
+XOM_df = snp_df[snp_df["name"] == "XOM"]
 V_df = snp_df[snp_df["name"] == "V"]
+
+df_used = [AAPL_df, AMZN_df, GOOG_df, IBM_df, JPM_df, MSFT_df, XOM_df, V_df]
+df_names = ["AAPL", "AMZN", "GOOG", "IBM", "JPM", "MSFT", "XOM", "V"]
 
 #---------------------------------------------------------------------------------------
 #max and min of amzn, google, aapl, ibm open and close range data
@@ -122,16 +126,12 @@ for name in tickers:
 #colors for lineplots
 colors = ['#1618E2', '#48B347', '#C3C3F9', '#DDDC7E', '#27B06A', '#8182F3', '#030320', '#7CA6D0']
 
+matplotlib.use("MacOSX") # allows the plot to show on MacOSX computers, comment out if not using/error occurs
+
 # Open-Close Range Plot
 plt.figure(figsize=(12, 5))
-plt.plot(AMZN_df["date"], AMZN_df["oc_range"], color=colors[0], label="AMZN")
-plt.plot(GOOG_df["date"], GOOG_df["oc_range"], color=colors[1], label="GOOG")
-plt.plot(AAPL_df["date"], AAPL_df["oc_range"], color=colors[2], label="AAPL")
-plt.plot(IBM_df["date"], IBM_df["oc_range"], color=colors[3], label="IBM")
-plt.plot(TSLA_df["date"], TSLA_df["oc_range"], color=colors[4], label="TSLA")
-plt.plot(V_df["date"], V_df["oc_range"], color=colors[5], label="V")
-plt.plot(JPM_df["date"], JPM_df["oc_range"], color=colors[6], label="JPM")
-plt.plot(MSFT_df["date"], MSFT_df["oc_range"], color=colors[7], label="MSFT")
+for x in range(len(df_used)):
+    plt.plot(df_used[x]["date"], df_used[x]["oc_range"], color=colors[x], label=df_names[x])
 plt.title("S&P 500 Open-Close Range Over Time")
 plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', ncol=2, fontsize=8) # legend
 plt.xlabel("Date")
@@ -148,14 +148,8 @@ plt.show()
 
 # High-Low Range Plot
 plt.figure(figsize=(12, 5))
-plt.plot(AMZN_df["date"], AMZN_df["hl_range"], color=colors[0], label="AMZN")
-plt.plot(GOOG_df["date"], GOOG_df["hl_range"], color=colors[1], label="GOOG")
-plt.plot(AAPL_df["date"], AAPL_df["hl_range"], color=colors[2], label="AAPL")
-plt.plot(IBM_df["date"], IBM_df["hl_range"], color=colors[3], label="IBM")
-plt.plot(TSLA_df["date"], TSLA_df["hl_range"], color=colors[4], label="TSLA")
-plt.plot(V_df["date"], V_df["hl_range"], color=colors[5], label="V")
-plt.plot(JPM_df["date"], JPM_df["hl_range"], color=colors[6], label="JPM")
-plt.plot(MSFT_df["date"], MSFT_df["hl_range"], color=colors[7], label="MSFT")
+for x in range(len(df_used)):
+    plt.plot(df_used[x]["date"], df_used[x]["hl_range"], color=colors[x], label=df_names[x])
 plt.title("S&P 500 High-Low Range Over Time")
 plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', ncol=2, fontsize=8) # legend
 plt.xlabel("Date")
@@ -169,3 +163,20 @@ plt.xticks(rotation=45)
 
 plt.tight_layout()
 plt.show()
+
+# for the summary statistics
+
+range_type = ["high low", "open close"]
+range_abv = ["hl", "oc"]
+
+
+print("\n\n")
+for x in range(len(df_used)):
+    print(f"ticker {df_names[x]}")
+    for y in range(len(range_type)):
+        print(f"\n{range_type[y]} range statistics\n")
+        print(f"mean: {round(df_used[x][f"{range_abv[y]}_range"].mean(), 2)}")
+        print(f"median: {round(df_used[x][f"{range_abv[y]}_range"].median(), 2)}")
+        print(f"variance: {round(df_used[x][f"{range_abv[y]}_range"].var(), 2)}")
+        print(f"standard deviation: {round(df_used[x][f"{range_abv[y]}_range"].std(), 2)}")
+    print("\n\n")
