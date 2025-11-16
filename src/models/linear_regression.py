@@ -37,19 +37,19 @@ def linearRegModel(csvPath):
             X, y, test_size=ts, random_state=42
         )
 
-        # Scale
+        # scale
         scaler = StandardScaler()
         XTrainScaled = scaler.fit_transform(XTrain)
         XTestScaled = scaler.transform(XTest)
 
-        # Model
+        # model
         model = LinearRegression()
         model.fit(XTrainScaled, yTrain)
 
-        # Predict
+        # predict
         yPred = model.predict(XTestScaled)
 
-        # Metrics
+        # metrics
         r2 = r2_score(yTest, yPred)
         mse = mean_squared_error(yTest, yPred)
 
@@ -57,7 +57,7 @@ def linearRegModel(csvPath):
         print("R² Score:", r2)
         print("Mean Squared Error:", mse)
 
-        # Plot 1: Actual vs Predicted
+        # plot for the actual vs predicted
         plt.figure(figsize=(8, 6))
         plt.scatter(yTest, yPred, color="blue", alpha=0.5)
         plt.xlabel("Actual Price Change")
@@ -66,7 +66,7 @@ def linearRegModel(csvPath):
         plt.grid(True, linewidth=1.5)
         plt.show()
 
-        # Plot 2: Residuals
+        # plot for the residuals
         residuals = yTest - yPred
 
         plt.figure(figsize=(8, 6))
@@ -77,3 +77,7 @@ def linearRegModel(csvPath):
         plt.title(f"Residual Plot (Split = {ts})")
         plt.grid(True, linewidth=1.5)
         plt.show()
+
+
+if __name__ == "__main__":
+    runLinearRegModel()
