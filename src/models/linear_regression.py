@@ -80,4 +80,4 @@ def linearRegModel(csvPath):
 
 
 if __name__ == "__main__":
-    runLinearRegModel()
+    linearRegModel("data/processed/snp_500.csv")
