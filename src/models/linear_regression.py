@@ -5,58 +5,61 @@ import numpy as np
 
 from src.usable_data import article_train, article_test, djia_train, djia_test
 
-# scale the tfidf data 
-scale = StandardScaler(with_mean=False)
-train_scale = scale.fit_transform(article_train)
-test_scale = scale.transform(article_test)
+# scale tfidf inputs
+scaler = StandardScaler(with_mean=False)
+trainScale = scaler.fit_transform(article_train)
+testScale = scaler.transform(article_test)
 
-train_scale = train_scale.toarray()
-test_scale = test_scale.toarray()
+# convert sparse matrices to dense arrays
+trainScale = trainScale.toarray()
+testScale = testScale.toarray()
 
-# prediction function 
-def pred_linear(x_row, weight, bias):
-    return np.dot(weight, x_row) + bias
+# prediction function for one row
+def predictRow(xRow, weight, bias):
+    return np.dot(weight, xRow) + bias
 
 # ordinary least squares loss
-def losses(parameters):
-    weight = parameters[:-1]
-    bias = parameters[-1]
-    preds = np.dot(train_scale, weight) + bias
+def losses(params):
+    weight = params[:-1]
+    bias = params[-1]
+    preds = trainScale @ weight + bias
     return np.sum((djia_train - preds) ** 2)
 
-# initialize parameters
-init_val = np.zeros(train_scale.shape[1] + 1)
+# initialize parameters for optimization
+initParams = np.zeros(trainScale.shape[1] + 1)
 
-# optimize with BFGS
-optimize = minimize(losses, init_val, method="BFGS")
-parameters = optimize.x
+# optimize parameters using bfgs
+result = minimize(losses, initParams, method="BFGS")
+params = result.x
 
-weight = parameters[:-1]
-bias = parameters[-1]
+weight = params[:-1]
+bias = params[-1]
 
-# predictions
-train_pred = np.dot(train_scale, weight) + bias
-test_pred = np.dot(test_scale, weight) + bias
+# make predictions
+trainPred = trainScale @ weight + bias
+testPred = testScale @ weight + bias
 
-print("\nManual Linear Regression on Vectorized News Data (OLS)")
-print("Training R^2:", r2_score(djia_train, train_pred))
-print("Testing R^2:", r2_score(djia_test, test_pred))
+# show regression performance
+print("\nmanual linear regression on vectorized news data (ols)")
+print("training r^2:", r2_score(djia_train, trainPred))
+print("testing r^2:", r2_score(djia_test, testPred))
 
-# threshold using mean 
+# compute threshold using mean
 threshold = np.mean(djia_train)
 
-train_bin = (train_pred > threshold).astype(int)
-test_bin = (test_pred > threshold).astype(int)
+trainBin = (trainPred > threshold).astype(int)
+testBin = (testPred > threshold).astype(int)
 
-train_true_bin = (djia_train > threshold).astype(int)
-test_true_bin = (djia_test > threshold).astype(int)
+trainTrueBin = (djia_train > threshold).astype(int)
+testTrueBin = (djia_test > threshold).astype(int)
 
-print("\nTraining Classification Report:")
-print(classification_report(train_true_bin, train_bin))
-print("Training Confusion Matrix:")
-print(confusion_matrix(train_true_bin, train_bin))
+# show classification results
+print("\ntraining classification report:")
+print(classification_report(trainTrueBin, trainBin))
+print("training confusion matrix:")
+print(confusion_matrix(trainTrueBin, trainBin))
 
-print("\nTesting Classification Report:")
-print(classification_report(test_true_bin, test_bin))
-print("Testing Confusion Matrix:")
-print(confusion_matrix(test_true_bin, test_bin))
+print("\ntesting classification report:")
+print(classification_report(testTrueBin, testBin))
+print("testing confusion matrix:")
+print(confusion_matrix(testTrueBin, testBin))
