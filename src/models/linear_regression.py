@@ -1,38 +1,29 @@
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import r2_score, classification_report, confusion_matrix
 from sklearn.linear_model import LinearRegression
-import numpy as np
-
-# importing processed data
+from sklearn.metrics import r2_score, classification_report, confusion_matrix
 from src.usable_data import article_train, article_test, djia_train, djia_test
+import numpy as np
+import matplotlib.pyplot as plt
 
 # scale tfidf vectors
-scaler = StandardScaler(with_mean=False)
-trainScale = scaler.fit_transform(article_train)
-testScale = scaler.transform(article_test)
+scale = StandardScaler(with_mean=False)
+trainInputScaled = scale.fit_transform(article_train)
+testInputScaled = scale.transform(article_test)
 
-# convert sparse matrices to dense numpy arrays
-trainScale = trainScale.toarray()
-testScale = testScale.toarray()
+# train pure linear regression model
+linearModel = LinearRegression()
+linearModel.fit(trainInputScaled, djia_train)
 
-# train linear regression model using scikit (fast)
-model = LinearRegression()
-model.fit(trainScale, djia_train)
+# predictions
+trainPred = linearModel.predict(trainInputScaled)
+testPred = linearModel.predict(testInputScaled)
 
-# make predictions
-trainPred = model.predict(trainScale)
-testPred = model.predict(testScale)
-
-# extract learned weights and bias
-weight = model.coef_
-bias = model.intercept_
-
-# print regression performance
-print("\nmanual linear regression on vectorized news data (sklearn)")
+# evaluate model
+print("linear regression results")
 print("training r^2:", r2_score(djia_train, trainPred))
 print("testing r^2:", r2_score(djia_test, testPred))
 
-# compute threshold using mean
+# classification labels based on mean threshold
 threshold = np.mean(djia_train)
 
 trainBin = (trainPred > threshold).astype(int)
@@ -41,7 +32,7 @@ testBin = (testPred > threshold).astype(int)
 trainTrueBin = (djia_train > threshold).astype(int)
 testTrueBin = (djia_test > threshold).astype(int)
 
-# print classification results
+# classification reports
 print("\ntraining classification report:")
 print(classification_report(trainTrueBin, trainBin))
 print("training confusion matrix:")
@@ -51,3 +42,12 @@ print("\ntesting classification report:")
 print(classification_report(testTrueBin, testBin))
 print("testing confusion matrix:")
 print(confusion_matrix(testTrueBin, testBin))
+
+# optional: plot predicted vs actual values
+plt.figure(figsize=(8, 6))
+plt.scatter(djia_test, testPred, alpha=0.4)
+plt.xlabel("actual djia change")
+plt.ylabel("predicted djia change")
+plt.title("linear regression: actual vs predicted")
+plt.grid(True)
+plt.show()
