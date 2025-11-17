@@ -1,62 +1,83 @@
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import r2_score, classification_report, confusion_matrix
-from scipy.optimize import minimize
+import pandas as pd
 import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import r2_score, mean_squared_error
+import matplotlib.pyplot as plt
 
-from src.usable_data import article_train, article_test, djia_train, djia_test
 
-# scale the tfidf data 
-scale = StandardScaler(with_mean=False)
-train_scale = scale.fit_transform(article_train)
-test_scale = scale.transform(article_test)
+def linearRegModel(csvPath):
+    
+    # load
+    df = pd.read_csv(csvPath)
+    df["date"] = pd.to_datetime(df["date"])
+    df = df[(df["date"] >= "2013-05-01") & (df["date"] <= "2016-05-02")]
 
-train_scale = train_scale.toarray()
-test_scale = test_scale.toarray()
+    # features
+    df["priceChange"] = df["close"] - df["open"]
+    df["priceRange"] = df["high"] - df["low"]
+    df["percentChange"] = (df["close"] - df["open"]) / df["open"]
+    df["upDown"] = (df["priceChange"] > 0).astype(int)
 
-# prediction function (linear regression)
-def pred_linear(x_row, weight, bias):
-    return np.dot(weight, x_row) + bias
+    #  prep x and y variables
+    dropCols = ["date", "ticker", "close", "open", "high", "low", "upDown"]
+    X = df.drop(columns=dropCols)
+    y = df["priceChange"]
 
-# ordinary least squares loss
-def losses(parameters):
-    weight = parameters[:-1]
-    bias = parameters[-1]
-    preds = np.dot(train_scale, weight) + bias
-    return np.sum((djia_train - preds) ** 2)
+    #  test split
+    testSizes = [0.35, 0.25, 0.45]
 
-# initialize parameters
-init_val = np.zeros(train_scale.shape[1] + 1)
+    for ts in testSizes:
 
-# optimize with BFGS (matches gradient-based notebooks)
-optimize = minimize(losses, init_val, method="BFGS")
-parameters = optimize.x
+        print(f"\nTrain/Test Split = {ts}\n")
 
-weight = parameters[:-1]
-bias = parameters[-1]
+        # split data
+        XTrain, XTest, yTrain, yTest = train_test_split(
+            X, y, test_size=ts, random_state=42
+        )
 
-# predictions
-train_pred = np.dot(train_scale, weight) + bias
-test_pred = np.dot(test_scale, weight) + bias
+        # scale
+        scaler = StandardScaler()
+        XTrainScaled = scaler.fit_transform(XTrain)
+        XTestScaled = scaler.transform(XTest)
 
-print("\nManual Linear Regression on Vectorized News Data (OLS)")
-print("Training R^2:", r2_score(djia_train, train_pred))
-print("Testing R^2:", r2_score(djia_test, test_pred))
+        # model
+        model = LinearRegression()
+        model.fit(XTrainScaled, yTrain)
 
-# threshold using mean 
-threshold = np.mean(djia_train)
+        # predict
+        yPred = model.predict(XTestScaled)
 
-train_bin = (train_pred > threshold).astype(int)
-test_bin = (test_pred > threshold).astype(int)
+        # metrics
+        r2 = r2_score(yTest, yPred)
+        mse = mean_squared_error(yTest, yPred)
 
-train_true_bin = (djia_train > threshold).astype(int)
-test_true_bin = (djia_test > threshold).astype(int)
+        print("Linear Regression Result")
+        print("R² Score:", r2)
+        print("Mean Squared Error:", mse)
 
-print("\nTraining Classification Report:")
-print(classification_report(train_true_bin, train_bin))
-print("Training Confusion Matrix:")
-print(confusion_matrix(train_true_bin, train_bin))
+        # plot for the actual vs predicted
+        plt.figure(figsize=(8, 6))
+        plt.scatter(yTest, yPred, color="blue", alpha=0.5)
+        plt.xlabel("Actual Price Change")
+        plt.ylabel("Predicted Price Change")
+        plt.title(f"Actual vs Predicted (Split = {ts})")
+        plt.grid(True, linewidth=1.5)
+        plt.show()
 
-print("\nTesting Classification Report:")
-print(classification_report(test_true_bin, test_bin))
-print("Testing Confusion Matrix:")
-print(confusion_matrix(test_true_bin, test_bin))
+        # plot for the residuals
+        residuals = yTest - yPred
+
+        plt.figure(figsize=(8, 6))
+        plt.scatter(yPred, residuals, color="blue", alpha=0.5)
+        plt.axhline(0, color="red", linewidth=1.5)
+        plt.xlabel("Predicted Price Change")
+        plt.ylabel("Residuals")
+        plt.title(f"Residual Plot (Split = {ts})")
+        plt.grid(True, linewidth=1.5)
+        plt.show()
+
+
+if __name__ == "__main__":
+    linearRegModel("data/processed/snp_500.csv")
