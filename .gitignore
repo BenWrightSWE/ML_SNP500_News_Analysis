@@ -1,2 +1,9 @@
 .venv
 usable_data.py
+__init__.py
+analysis/__init__.py
+models/__init__.py
+__pycache__/*
+analysis/__pycache__/*
+models/__pycache__/*
+ridge_model.py

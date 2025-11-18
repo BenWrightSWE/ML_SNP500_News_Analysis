@@ -10,6 +10,7 @@ then import all the needed imports:
     python3 -m pip install
     * scikit-learn
     * pandas
+    * matplotlib
 
 to exit venv use:
 deactivate

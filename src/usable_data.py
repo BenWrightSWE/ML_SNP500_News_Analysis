@@ -3,12 +3,10 @@ from scipy.sparse import csr_matrix, vstack
 from sklearn.model_selection import train_test_split
 import re
 
-# changing how python finds the paths - change from jas
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent.parent  # project root
 DATA = ROOT / "data" / "processed" / "vector_news.csv"
-
 # converts a string sparse matrix to a sparse matrix
 
 def parse_sparse_matrix_string(s, shape=(1, 22142)):
