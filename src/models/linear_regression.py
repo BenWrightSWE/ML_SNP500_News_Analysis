@@ -1,83 +1,56 @@
-import pandas as pd
-import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import r2_score, mean_squared_error
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score, classification_report, confusion_matrix
+from src.usable_data import article_train, article_test, djia_train, djia_test
+import numpy as np
 import matplotlib.pyplot as plt
 
+# scale tfidf vectors
+scale = StandardScaler(with_mean=False)
+trainInputScaled = scale.fit_transform(article_train)
+testInputScaled = scale.transform(article_test)
 
-def linearRegModel(csvPath):
-    
-    # load
-    df = pd.read_csv(csvPath)
-    df["date"] = pd.to_datetime(df["date"])
-    df = df[(df["date"] >= "2013-05-01") & (df["date"] <= "2016-05-02")]
+# train  linear regression model
+linearModel = LinearRegression()
+linearModel.fit(trainInputScaled, djia_train)
 
-    # features
-    df["priceChange"] = df["close"] - df["open"]
-    df["priceRange"] = df["high"] - df["low"]
-    df["percentChange"] = (df["close"] - df["open"]) / df["open"]
-    df["upDown"] = (df["priceChange"] > 0).astype(int)
+# predictions
+trainPred = linearModel.predict(trainInputScaled)
+testPred = linearModel.predict(testInputScaled)
 
-    #  prep x and y variables
-    dropCols = ["date", "ticker", "close", "open", "high", "low", "upDown"]
-    X = df.drop(columns=dropCols)
-    y = df["priceChange"]
+# evaluate model
+print("linear regression results")
+print("training r^2:", r2_score(djia_train, trainPred))
+print("testing r^2:", r2_score(djia_test, testPred))
 
-    #  test split
-    testSizes = [0.35, 0.25, 0.45]
+# classification labels 
+threshold = np.mean(djia_train)
 
-    for ts in testSizes:
+trainBin = (trainPred > threshold).astype(int)
+testBin = (testPred > threshold).astype(int)
 
-        print(f"\nTrain/Test Split = {ts}\n")
+trainTrueBin = (djia_train > threshold).astype(int)
+testTrueBin = (djia_test > threshold).astype(int)
 
-        # split data
-        XTrain, XTest, yTrain, yTest = train_test_split(
-            X, y, test_size=ts, random_state=42
-        )
+# classification reports
+print("\ntraining classification report:")
+print(classification_report(trainTrueBin, trainBin))
+print("training confusion matrix:")
+print(confusion_matrix(trainTrueBin, trainBin))
 
-        # scale
-        scaler = StandardScaler()
-        XTrainScaled = scaler.fit_transform(XTrain)
-        XTestScaled = scaler.transform(XTest)
+print("\ntesting classification report:")
+print(classification_report(testTrueBin, testBin))
+print("testing confusion matrix:")
+print(confusion_matrix(testTrueBin, testBin))
 
-        # model
-        model = LinearRegression()
-        model.fit(XTrainScaled, yTrain)
-
-        # predict
-        yPred = model.predict(XTestScaled)
-
-        # metrics
-        r2 = r2_score(yTest, yPred)
-        mse = mean_squared_error(yTest, yPred)
-
-        print("Linear Regression Result")
-        print("R² Score:", r2)
-        print("Mean Squared Error:", mse)
-
-        # plot for the actual vs predicted
-        plt.figure(figsize=(8, 6))
-        plt.scatter(yTest, yPred, color="blue", alpha=0.5)
-        plt.xlabel("Actual Price Change")
-        plt.ylabel("Predicted Price Change")
-        plt.title(f"Actual vs Predicted (Split = {ts})")
-        plt.grid(True, linewidth=1.5)
-        plt.show()
-
-        # plot for the residuals
-        residuals = yTest - yPred
-
-        plt.figure(figsize=(8, 6))
-        plt.scatter(yPred, residuals, color="blue", alpha=0.5)
-        plt.axhline(0, color="red", linewidth=1.5)
-        plt.xlabel("Predicted Price Change")
-        plt.ylabel("Residuals")
-        plt.title(f"Residual Plot (Split = {ts})")
-        plt.grid(True, linewidth=1.5)
-        plt.show()
-
+#  plot predicted vs actual values
+plt.figure(figsize=(8, 6))
+plt.scatter(djia_test, testPred, alpha=0.4)
+plt.xlabel("actual djia change")
+plt.ylabel("predicted djia change")
+plt.title("linear regression: actual vs predicted")
+plt.grid(True)
+plt.show()
 
 if __name__ == "__main__":
     linearRegModel("data/processed/snp_500.csv")
