@@ -15,6 +15,7 @@ test_input_scaled = scale.transform(article_test)
 # train and test Ridge model
 
 rtscores = []
+rtscores_train = []
 k_vals = [0.1, 1, 10, 100, 1000]
 
 for k in k_vals:
@@ -29,6 +30,7 @@ for k in k_vals:
     print()
     print("Train")
     print(f'R-Squared: {r2_score(djia_train, pred_train)}')
+    rtscores_train.append(round(r2_score(djia_train, pred_train), 2))
     print()
     print("Test")
     print(f'R-Squared: {r2_score(djia_test, pred_test)}')
@@ -47,8 +49,15 @@ for k in k_vals:
 
 k_val_strs = ["0.1", "1", "10", "100", "1000"]
 matplotlib.use("MacOSX") # allows the plot to show on MacOSX computers, comment out if not using/error occurs
+
+plt.bar(k_val_strs, rtscores_train)
+plt.title("R^2 for Ridge Model K Values Train")
+plt.xlabel("k")
+plt.ylabel("R_2")
+plt.show()
+
 plt.bar(k_val_strs, rtscores)
-plt.title("R^2 for Ridge Model K Values")
+plt.title("R^2 for Ridge Model K Values Test")
 plt.xlabel("k")
 plt.ylabel("R_2")
 plt.show()
