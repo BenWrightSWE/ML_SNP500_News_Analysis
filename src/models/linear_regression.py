@@ -10,7 +10,7 @@ scale = StandardScaler(with_mean=False)
 trainInputScaled = scale.fit_transform(article_train)
 testInputScaled = scale.transform(article_test)
 
-# train  linear regression model
+# train  model
 linearModel = LinearRegression()
 linearModel.fit(trainInputScaled, djia_train)
 
@@ -43,7 +43,7 @@ print(classification_report(testTrueBin, testBin))
 print("testing confusion matrix:")
 print(confusion_matrix(testTrueBin, testBin))
 
-#  plot predicted vs actual values
+# plot predicted vs actual values
 plt.figure(figsize=(8, 6))
 plt.scatter(djia_test, testPred, alpha=0.4)
 plt.xlabel("actual djia change")
@@ -51,6 +51,3 @@ plt.ylabel("predicted djia change")
 plt.title("linear regression: actual vs predicted")
 plt.grid(True)
 plt.show()
-
-if __name__ == "__main__":
-    linearRegModel("data/processed/snp_500.csv")
