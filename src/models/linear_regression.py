@@ -10,7 +10,7 @@ scale = StandardScaler(with_mean=False)
 trainInputScaled = scale.fit_transform(article_train)
 testInputScaled = scale.transform(article_test)
 
-# train pure linear regression model
+# train  model
 linearModel = LinearRegression()
 linearModel.fit(trainInputScaled, djia_train)
 
@@ -23,7 +23,7 @@ print("linear regression results")
 print("training r^2:", r2_score(djia_train, trainPred))
 print("testing r^2:", r2_score(djia_test, testPred))
 
-# classification labels based on mean threshold
+# classification labels 
 threshold = np.mean(djia_train)
 
 trainBin = (trainPred > threshold).astype(int)
@@ -43,7 +43,7 @@ print(classification_report(testTrueBin, testBin))
 print("testing confusion matrix:")
 print(confusion_matrix(testTrueBin, testBin))
 
-# optional: plot predicted vs actual values
+# plot predicted vs actual values
 plt.figure(figsize=(8, 6))
 plt.scatter(djia_test, testPred, alpha=0.4)
 plt.xlabel("actual djia change")
